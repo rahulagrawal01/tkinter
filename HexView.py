@@ -31,6 +31,7 @@ class HexView(Tix.Frame):
         self.height = self.marginY + self.charHeight*self.linesDisplayed + self.marginY
 
         self.canvas = Tix.Canvas(self, width=self.width, height=self.height)
+        self.canvas.config(background='white')
         self.canvas.pack()
 
         self.addr = 0
@@ -62,6 +63,7 @@ class HexView(Tix.Frame):
             self.canvas.create_text( \
                 [self.xAddr, yLine], \
                 text = '%08X: ' % currAddr, \
+                fill = "blue", \
                 anchor = Tix.NW, \
                 font = self.font \
             )
@@ -84,6 +86,7 @@ class HexView(Tix.Frame):
             self.canvas.create_text( \
                 [self.xAscii, yLine], \
                 text = ''.join(chunk), \
+                fill = "#008000", \
                 anchor = Tix.NW, \
                 font = self.font \
             )
