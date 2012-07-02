@@ -1,15 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-# instead of Tkinter
-import Tix
-import tkFont
+# tkinter/ttk stuff
+from tkinter import *
+from tkinter.font import *
+from tkinter.ttk import *
 
-class HexView(Tix.Frame):
+class HexView(Frame):
     def __init__(self, parent):
-        Tix.Frame.__init__(self, parent)
+        Frame.__init__(self, parent)
 
         self.parent = parent
-        self.font = tkFont.Font(family='monospace', size=12)
+        self.font = Font(family='monospace', size=12)
 
         (w, h) = (self.font.measure('X'), self.font.metrics('linespace'))
         self.charWidth = w
@@ -30,12 +31,17 @@ class HexView(Tix.Frame):
         self.width = self.xAscii + self.lAscii + self.marginX
         self.height = self.marginY + self.charHeight*self.linesDisplayed + self.marginY
 
-        self.canvas = Tix.Canvas(self, width=self.width, height=self.height)
+        self.canvas = Canvas(self, width=self.width, height=self.height)
         self.canvas.config(background='white')
         self.canvas.pack()
 
         self.addr = 0
         self.data = []
+
+        self.hlRange = None
+
+    def setHighlight(self, start, end):
+        self.hlRange = [start, end]
 
     def setAddr(self, addr):
         self.addr = addr
@@ -46,6 +52,8 @@ class HexView(Tix.Frame):
     def draw(self):
         if not self.data:
             return
+
+        self.canvas.delete(ALL)
 
         capacity = self.linesDisplayed * 16
 
@@ -64,17 +72,24 @@ class HexView(Tix.Frame):
                 [self.xAddr, yLine], \
                 text = '%08X: ' % currAddr, \
                 fill = "blue", \
-                anchor = Tix.NW, \
+                anchor = NW, \
                 font = self.font \
             )
 
             # write the bytes
-            self.canvas.create_text( \
-                [self.xBytes, yLine], \
-                text = ' '.join(map(lambda x: ('%02X' % x), chunk)), \
-                anchor = Tix.NW, \
-                font = self.font \
-            )
+            for byteNum in range(len(chunk)):
+                textId = self.canvas.create_text( \
+                    [self.xBytes + byteNum * self.charWidth * 3, yLine], \
+                    text = '%02X' % chunk[byteNum], \
+                    anchor = NW, \
+                    font = self.font
+                )
+
+                if self.hlRange:
+                    if currAddr >= self.hlRange[0] and currAddr <= self.hlRange[1]:
+                        rectId = self.canvas.create_rectangle(self.canvas.bbox(textId), fill='yellow', outline='yellow')
+                        self.canvas.tag_lower(rectId, textId)
+                currAddr += 1
 
             # write the ascii
             for i, byte in enumerate(chunk):
@@ -87,11 +102,10 @@ class HexView(Tix.Frame):
                 [self.xAscii, yLine], \
                 text = ''.join(chunk), \
                 fill = "#008000", \
-                anchor = Tix.NW, \
+                anchor = NW, \
                 font = self.font \
             )
        
-            currAddr += 16
             currInd += 16
             currLine += 1
 
@@ -101,7 +115,7 @@ class HexView(Tix.Frame):
 
 def doTest():
     # root window
-    root = Tix.Tk()
+    root = Tk()
     root.wm_title("HexView Test\n")
 
     # reserve board on root
@@ -134,7 +148,7 @@ def doTest():
         0x54, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x54, 0x02, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00 \
     ]
     hvt.setData(data)
-
+    hvt.setHighlight(0xDEADBEF5, 0xDEADBEFF)
     hvt.pack()
 
     hvt.draw()
