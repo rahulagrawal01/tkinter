@@ -33,12 +33,28 @@ class HexView(Frame):
 
         self.canvas = Canvas(self, width=self.width, height=self.height)
         self.canvas.config(background='white')
-        self.canvas.pack()
+        self.canvas.pack(fill=BOTH, expand=True)
 
         self.addr = 0
         self.data = []
 
         self.hlRange = None
+
+        self.parent.bind('<Configure>', self.cbParentResized)
+
+    # A Configure event is sent to a window whenever its size, position, or border width changes, and sometimes when it has changed position in the stacking order.
+    def cbParentResized(self, event):
+        self.height = event.height
+        self.width = event.width
+        newLinesDisplayed = self.height // self.charHeight
+
+        #print("HexView set dimensions to ({}, {})".format(self.width, self.height))
+        #print("HexView set linesDisplayed to {}".format(self.linesDisplayed))
+        #print("HexView set capacity to {}".format(self.getCapacity()))
+
+        if newLinesDisplayed != self.linesDisplayed:
+            self.linesDisplayed = newLinesDisplayed
+            self.draw()
 
     def setHighlight(self, start, end):
         self.hlRange = [start, end]
@@ -53,9 +69,9 @@ class HexView(Frame):
         if not self.data:
             return
 
-        self.canvas.delete(ALL)
+        #print("READRAW!!!!!!!!!!!!!!")
 
-        capacity = self.linesDisplayed * 16
+        self.canvas.delete(ALL)
 
         currAddr = self.addr
         currInd = 0
@@ -112,6 +128,9 @@ class HexView(Frame):
             # run out of bytes early? (display oversized?)
             if len(chunk) < 16:
                 break
+
+    def getCapacity(self):
+        return 16 * self.linesDisplayed
 
 def doTest():
     # root window
