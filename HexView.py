@@ -42,6 +42,9 @@ class HexView(Frame):
 
         self.parent.bind('<Configure>', self.cbParentResized)
 
+    def bind(self, event, func):
+        self.canvas.bind(event, func)
+
     # A Configure event is sent to a window whenever its size, position, or border width changes, and sometimes when it has changed position in the stacking order.
     def cbParentResized(self, event):
         self.height = event.height
