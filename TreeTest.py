@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#hello this is a very good project
 import Tix
 
 class View(object):
